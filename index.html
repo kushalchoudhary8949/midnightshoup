@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Midnight Cafe — Order</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#f59e0b;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,#071025 0%, #061526 60%);
+      color:#e6eef8;
+      min-height:100vh;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:20px;
+    }
+    header{
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      gap:16px;
+    }
+    .logo{
+      width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#f97316,#f59e0b);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#08111a;font-size:20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    }
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .menu {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 6px 20px rgba(2,6,23,0.6);
+      overflow:auto;
+    }
+    .item{
+      display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;margin-bottom:10px;background:var(--glass);
+    }
+    .item img{width:78px;height:58px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#0b1220}
+    .item .meta{flex:1}
+    .item h3{margin:0;font-size:16px}
+    .item p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .item .right{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+    .price{font-weight:700}
+    .mrp{font-size:12px;color:var(--muted)}
+
+    button.add{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:10px;color:inherit;cursor:pointer;
+    }
+
+    .cart {
+      position:sticky; top:20px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01));
+      padding:18px;border-radius:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6);
+      height:fit-content;
+    }
+    .cart h2{margin:0 0 8px 0}
+    .cart-list{max-height:320px;overflow:auto;margin-bottom:12px}
+    .cart-row{display:flex;gap:12px;align-items:center;padding:8px 6px;border-radius:8px}
+    .cart-row .name{flex:1}
+    .qty{display:flex;gap:6px;align-items:center}
+    .qty button{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;cursor:pointer}
+    .total{display:flex;justify-content:space-between;align-items:center;font-weight:700;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.04)}
+    input[type="text"]{
+      width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-top:8px;
+    }
+    .place{
+      margin-top:12px;padding:12px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#fb923c);
+      color:#08111a;border:none;font-weight:800;cursor:pointer;width:100%;
+      box-shadow:0 8px 26px rgba(245,158,11,0.12);
+    }
+
+    .small{font-size:12px;color:var(--muted)}
+    footer.note{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px;text-align:center}
+
+    @media(max-width:930px){
+      .app{grid-template-columns:1fr; padding-bottom:60px}
+      .cart{position:relative; top:0}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <div class="logo">
+  <img src="logo.jpg" alt="Logo" style="width:100%;height:100%;border-radius:12px;object-fit:cover;">
+</div>
+
+      <div>
+        <h1>Midnight Cafe — Student Menu</h1>
+        <p class="lead">Add items → enter room number → place order on WhatsApp.</p>
+      </div>
+    </header>
+
+    <section class="menu" id="menu"></section>
+
+    <aside class="cart">
+      <h2>Your Cart 🧾</h2>
+
+      <!-- cart list (items will render here) -->
+      <div class="cart-list" id="cart-list"></div>
+
+      <!-- empty cart message stays outside so JS won't delete it -->
+      <p class="small" id="empty-cart">Cart is empty — add something!</p>
+
+      <div class="total">
+        <div class="small">Subtotal</div>
+        <div id="subtotal">₹0</div>
+      </div>
+
+      <label class="small" style="margin-top:12px">Room / Hostel Number</label>
+      <input type="text" id="cust-room" placeholder="e.g. G-204" />
+
+      <button class="place" id="place-order">Place order on WhatsApp 📱</button>
+
+      <div class="small" style="margin-top:8px">
+        Orders will open WhatsApp to <strong>+91 8949508256</strong>.
+      </div>
+    </aside>
+
+    <footer class="note">Menu & prices editable inside JS → menuItems[]</footer>
+  </main>
+
+<script>
+// ----------------------------------------------
+// WHATSAPP NUMBER (include country code, no + sign)
+// ----------------------------------------------
+const phoneNumber = "918949508256"; // +91 8949508256
+
+// ----------------------------------------------
+// MENU ITEMS (edit here to change menu/prices)
+// ----------------------------------------------
+const menuItems = [
+  {"id":"m1","name":"Green lays (Big)","price":60,"mrp":50, "image":"./greenlays.jpg"},
+  {"id":"m2","name":"Red Lays (Big)","price":60,"mrp":50, "image":"./redlays.jpg"},
+  {"id":"m3","name":"Yellow lays (Big)","price":60,"mrp":50, "image":"./yellowlays.jpg"},
+  {"id":"m4","name":"Blue lays (Big)","price":60,"mrp":50, "image":"./bluelays.jpg"},
+  {"id":"m5","name":"Dark fantasy biscuit","price":40,"mrp":40, "image":"./darkfantasy.jpg"},
+  {"id":"m6","name":"Bingo Mad Angles (Aachari)","price":60,"mrp":50, "image":"./madangle.jpg"},
+  {"id":"m7","name":"Oreo biscuit","price":40,"mrp":40, "image":"./oreo.jpg"},
+  {"id":"m8","name":"Tede Medhe","price":30,"mrp":20, "image":"./tedemedhe.jpg"},
+  {"id":"m9","name":"Lotte choco pie","price":15,"mrp":10, "image":"./lotte.jpg"},
+  {"id":"m10","name":"Bingo Original","price":60,"mrp":50, "image":"./original.jpg"},
+  {"id":"m11","name":"Sizzlin hot lays","price":35,"mrp":20, "image":"./sizzlinhotlays.jpg"},
+  {"id":"m12","name":"Maggi","price":20,"mrp":15, "image":"./maggi.jpg"},
+  {"id":"m13","name":"Lays wafer chips","price":35,"mrp":20, "image":"./layswafer.jpg"},
+  {"id":"m14","name":"Soya stick","price":65,"mrp":50, "image":"./soyastick.jpg"},
+  {"id":"m15","name":"Good day choco chip","price":35,"mrp":30, "image":"./goodday.jpg"},
+  {"id":"m16","name":"Dark fantasy pie","price":15,"mrp":10, "image":"./darkfantasypie.jpg"}
+];
+
+// simple placeholder image path — change or add file as needed
+const PLACEHOLDER = "placeholder.jpg";
+
+const menuEl = document.getElementById("menu");
+const cartListEl = document.getElementById("cart-list");
+const subtotalEl = document.getElementById("subtotal");
+const roomInput = document.getElementById("cust-room");
+const emptyCartMsg = document.getElementById("empty-cart");
+
+let cart = {};
+
+// ----------------------------------------------
+// RENDER MENU
+// ----------------------------------------------
+function renderMenu() {
+  menuEl.innerHTML = "";
+
+  menuItems.forEach(item => {
+    const el = document.createElement("div");
+    el.className = "item";
+
+    // use item.image consistently, fallback to placeholder
+    const imgSrc = item.image && item.image.trim() !== "" ? item.image : null;
+
+el.innerHTML = `
+  <img src="${imgSrc || ""}" 
+       alt="${escapeHtml(item.name)}"
+       style="${imgSrc ? "" : "display:none;"}" />
+
+  <div class="meta">
+    <h3>${escapeHtml(item.name)}</h3>
+    <div class="mrp">MRP ₹${item.mrp}</div>
+  </div>
+
+  <div class="right">
+    <div class="price">₹${item.price}</div>
+    <button class="add" data-id="${item.id}">Add</button>
+  </div>
+`;
+
+
+    menuEl.appendChild(el);
+  });
+
+  document.querySelectorAll(".add").forEach(btn => {
+    btn.onclick = () => addToCart(btn.dataset.id);
+  });
+
+  console.log("Menu rendered:", menuItems.length, "items");
+}
+
+// ----------------------------------------------
+// CART FUNCTIONS
+// ----------------------------------------------
+function addToCart(id){
+  cart[id] = (cart[id] || 0) + 1;
+  renderCart();
+}
+
+function removeFromCart(id){
+  delete cart[id];
+  renderCart();
+}
+
+function renderCart(){
+  cartListEl.innerHTML = "";
+  let subtotal = 0;
+  const ids = Object.keys(cart);
+
+  // show/hide empty cart text
+  emptyCartMsg.style.display = ids.length === 0 ? "block" : "none";
+
+  ids.forEach(id=>{
+    const item = menuItems.find(x=>x.id===id);
+    if(!item) return;
+    const qty = cart[id];
+    const lineTotal = qty * item.price;
+    subtotal += lineTotal;
+
+    const row = document.createElement("div");
+    row.className="cart-row";
+
+    row.innerHTML = `
+      <div class="name">
+        <strong>${escapeHtml(item.name)}</strong>
+        <div class="small">₹${item.price} × ${qty} = ₹${lineTotal}</div>
+      </div>
+      <div class="qty">
+        <button class="dec" data-id="${id}">−</button>
+        <div class="qty-val">${qty}</div>
+        <button class="inc" data-id="${id}">+</button>
+        <button class="rem" data-id="${id}">✕</button>
+      </div>
+    `;
+
+    cartListEl.appendChild(row);
+  });
+
+  subtotalEl.textContent = "₹" + subtotal;
+
+  // attach event listeners for inc/dec/remove buttons
+  cartListEl.querySelectorAll(".inc").forEach(b=>{
+    b.onclick = ()=> { const id = b.dataset.id; cart[id] = (cart[id]||0) + 1; renderCart(); };
+  });
+  cartListEl.querySelectorAll(".dec").forEach(b=>{
+    b.onclick = ()=> { const id = b.dataset.id; cart[id] = (cart[id]||0) - 1; if(cart[id] <= 0) removeFromCart(id); else renderCart(); };
+  });
+  cartListEl.querySelectorAll(".rem").forEach(b=>{
+    b.onclick = ()=> { removeFromCart(b.dataset.id); };
+  });
+}
+
+// ----------------------------------------------
+// WHATSAPP ORDER
+// ----------------------------------------------
+document.getElementById("place-order").onclick = ()=>{
+
+  const room = roomInput.value.trim();
+  if(!room){
+    alert("Enter your Room / Hostel Number");
+    roomInput.focus();
+    return;
+  }
+
+  const ids = Object.keys(cart);
+  if(ids.length===0){
+    alert("Your cart is empty!");
+    return;
+  }
+
+  let msg = `Midnight Cafe Order\nRoom: ${room}\n\n`;
+  let total = 0;
+
+  ids.forEach(id=>{
+    const item = menuItems.find(x=>x.id===id);
+    const qty = cart[id];
+    const line = qty * item.price;
+    total += line;
+    msg += `${qty} × ${item.name} — ₹${line}\n`;
+  });
+
+  msg += `\nTotal: ₹${total}`;
+
+  const encoded = encodeURIComponent(msg);
+
+  // open WhatsApp (web or app) in same tab — reliable, not blocked by popup blockers
+  window.location.href = `https://wa.me/${phoneNumber}?text=${encoded}`;
+};
+
+// ----------------------------------------------
+// small util to avoid injecting raw HTML from names (safety)
+// ----------------------------------------------
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// initial render
+renderMenu();
+renderCart();
+</script>
+
+</body>
+</html>
+
